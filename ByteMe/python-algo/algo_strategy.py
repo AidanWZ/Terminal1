@@ -113,10 +113,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.enemy_health = game_state.enemy_health
         gamelib.debug_write("Last turn (number {}) took {} milliseconds".format(game_state.turn_number, game_state.my_time))
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
+        gamelib.debug_write('We have {} cores and {} bits'.format(game_state.get_resource(game_state.BITS, player_index=0), game_state.get_resource(game_state.CORES, player_index=0)))
         #game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
         self.defense_strategy(game_state)
-        game_state = gamelib.GameState(self.config, turn_state)
+        #game_state = gamelib.GameState(self.config, turn_state)
         self.offense_strategy(game_state)
         game_state.submit_turn()
 
@@ -126,6 +127,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     """
 
     def defense_strategy(self, game_state):
+        gamelib.debug_write("running defense strat")
         """
         For defense we will use a staggered layout with filters and destructers.
         We will place destructors near locations the opponent managed to score on.
@@ -136,19 +138,16 @@ class AlgoStrategy(gamelib.AlgoCore):
         master_list = []
         for row in range(len(self.desired_map)):
             for col in range(len(self.desired_map[row])):
-                master_list.append((row, col))
+                master_list.append((col, 13-row))
         master_list.sort(key=self.getPriority, reverse=True)
-        destructors = self.findInMap(2)
-        filters = self.findInMap(1)
-        encryptors = self.findInMap(3)
-        for coords in master_list:
-            unit = self.getUnit(coords)
+        for coord in master_list:
+            unit = self.getUnit(coord)
             if unit == 1:
-                game_state.attempt_spawn(FILTER, [[27-coords[1], coords[0]]])
+                game_state.attempt_spawn(FILTER, [coord])
             elif unit == 2:
-                game_state.attempt_spawn(DESTRUCTOR, [[27-coords[1], coords[0]]])
+                game_state.attempt_spawn(DESTRUCTOR, [coord])
             elif unit == 3:
-                game_state.attempt_spawn(ENCRYPTOR, [[27-coords[1], coords[0]]])
+                game_state.attempt_spawn(ENCRYPTOR, [coord])
 
     def offense_strategy(self, game_state):
         bits = game_state.get_resource(game_state.BITS, player_index=0)
@@ -167,16 +166,16 @@ class AlgoStrategy(gamelib.AlgoCore):
                 other_location = (best_location[0] + 1, best_location[1] + 1)
                 game_state.attempt_spawn(PING, other_location)
                 other1_location = (best_location[0] - 1, best_location[1] - 1)
-                game_state.attempt_spawn(PING, other1_location)
+                game_state.attempt_spawn(PING, other1_location, game_state.number_affordable(game_state.PING))
             else:
                 other2_location = (best_location[0] + 1, best_location[1] - 1)
                 game_state.attempt_spawn(PING, other2_location)
                 other3_location = (best_location[0] - 1, best_location[1] + 1)
-                game_state.attempt_spawn(PING, other3_location)
+                game_state.attempt_spawn(PING, other3_location, game_state.number_affordable(game_state.PING))
             #sends anything else incase all the above options fail
             newLocations = self.get_deploy_locations(game_state)
             newBestLocation = self.least_damage_spawn_location(game_state, newLocations)
-            game_state.attempt_spawn(EMP, newBestLocation, 1000)
+            game_state.attempt_spawn(PING, newBestLocation, 20)
         elif bits > 15:
             locations = self.findInMap(4)
             if locations == None:
@@ -190,16 +189,16 @@ class AlgoStrategy(gamelib.AlgoCore):
                 other_location = (best_location[0] + 1, best_location[1] + 1)
                 game_state.attempt_spawn(PING, other_location)
                 other1_location = (best_location[0] - 1, best_location[1] - 1)
-                game_state.attempt_spawn(PING, other1_location)
+                game_state.attempt_spawn(PING, other1_location, game_state.number_affordable(game_state.PING))
             else:
                 other2_location = (best_location[0] + 1, best_location[1] - 1)
                 game_state.attempt_spawn(PING, other2_location)
                 other3_location = (best_location[0] - 1, best_location[1] + 1)
-                game_state.attempt_spawn(PING, other3_location)
+                game_state.attempt_spawn(PING, other3_location, game_state.number_affordable(game_state.PING))
             #sends anything else in case all the above options fail
             newLocations = self.get_deploy_locations(game_state)
             newBestLocation = self.least_damage_spawn_location(game_state, newLocations)
-            game_state.attempt_spawn(EMP, newBestLocation, 1000)
+            game_state.attempt_spawn(PING, newBestLocation, 1000)
 
     def stall_with_scramblers(self, game_state):
         """
