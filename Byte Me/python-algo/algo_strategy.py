@@ -69,6 +69,18 @@ class AlgoStrategy(gamelib.AlgoCore):
     strategy and can safely be replaced for your custom algo.
     """
 
+    def offense_strategy(self, game_state):
+        #Wait till turn 3 to deploy any offenses
+        bits = game_state.bits
+        if game_state.turn_number == 0:
+            break
+        else if bits > 15:
+            spawn_location_options = [[][][][]]
+            #will check which of the preset spawn location options have the least enemy units in the path
+            best_location = self.least_damage_spawn_location(game_state, spawn_location_options)
+            game_state.attempt_spawn(EMP, best_location, 2)
+            spawn_location_options = spawn_location_options - best_location
+
     def starter_strategy(self, game_state):
         """
         For defense we will use a spread out layout and some Scramblers early on.
@@ -185,6 +197,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         It gets the path the unit will take then checks locations on that path to 
         estimate the path's damage risk.
         """
+
         damages = []
         # Get the damage estimate each path will take
         for location in location_options:
