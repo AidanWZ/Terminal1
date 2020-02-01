@@ -9,12 +9,12 @@ import json
 Most of the algo code you write will be in this file unless you create new
 modules yourself. Start by modifying the 'on_turn' function.
 
-Advanced strategy tips: 
+Advanced strategy tips:
 
   - You can analyze action frames by modifying on_action_frame function
 
-  - The GameState.map object can be manually manipulated to create hypothetical 
-  board states. Though, we recommended making a copy of the map to preserve 
+  - The GameState.map object can be manually manipulated to create hypothetical
+  board states. Though, we recommended making a copy of the map to preserve
   the actual current map state.
 """
 
@@ -27,8 +27,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Random seed: {}'.format(seed))
 
     def on_game_start(self, config):
-        """ 
-        Read in config and perform any initial setup here 
+        """
+        Read in config and perform any initial setup here
         """
         gamelib.debug_write('Configuring your custom algo strategy...')
         self.config = config
@@ -84,14 +84,14 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.desired_filters = findInMap(1)
         self.desired_destructors = findInMap(2)
         self.desired_encryptors = findInMap(3)
-        
+
     def findInMap(value):
         result = []
         rowcounter = 0
         columncounter = 0
         for row in self.desired_map:
             for column in row:
-                if(column == value)
+                if(column == value):
                     result.append([columncounter, rowcounter])
                 columncounter += 1
             rowcounter += 1
@@ -100,7 +100,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     def getPriority(coords):
         return this.b_priority_map[27-coords[1]][coords[0]]
 
-     def getUnit(coords):
+    def getUnit(coords):
          return this.desired_map[27-coords[1]][coords[0]]
 
     def on_turn(self, turn_state):
@@ -138,7 +138,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         # --------------------  First, place basic defenses-------------------------------#
         # Place destructors that attack enemy units
-        filter_locations = [[0, 13], [1, 13], [2, 13], [3, 13], 
+        filter_locations = [[0, 13], [1, 13], [2, 13], [3, 13],
                                 [24, 13], [25, 13], [26, 13], [27, 14]
                                 [8, 11], [9, 11], [10, 11]
                                 [17, 11], [18, 11], [19, 11]
@@ -155,16 +155,16 @@ class AlgoStrategy(gamelib.AlgoCore):
         for coords in master_list:
             unit = getUnit(coords)
             if unit == 1:
-                game_state.attempt_spawn(FILTER, [[27-coords[1], coords[0]]]])
+                game_state.attempt_spawn(FILTER, [[27-coords[1], coords[0]]])
             elif unit == 2:
                 game_state.attempt_spawn(DESTRUCTOR, [[27-coords[1], coords[0]]])
             elif unit == 3:
                 game_state.attempt_spawn(ENCRYPTOR, [[27-coords[1], coords[0]]])
 
-    def offense_strategy(self, game_state):       
+    def offense_strategy(self, game_state):
        if game_state.turn_number == 0:
-           break
-       else if game_state.my_health <= 3
+           return
+       elif game_state.my_health <= 3:
            locations = findInMap(4)
            if locations == None:
                locations = self.get_deploy_locations(game_state)
@@ -195,7 +195,7 @@ class AlgoStrategy(gamelib.AlgoCore):
            newLocations = self.get_deploy_locations(game_state)
            newBestLocation = self.least_damage_spawn_location(game_state, newLocations)
            game_state.attempt_spawn(EMP, newBestLocation, 1000)
-       else if bits > 15:
+       elif bits > 15:
            locations = findInMap(4)
            if locations == None:
                locations = self.get_deploy_locations(game_state)
@@ -234,16 +234,16 @@ class AlgoStrategy(gamelib.AlgoCore):
         Send out Scramblers at random locations to defend our base from enemy moving units.
         """
         deploy_locations = self.get_deploy_locations(game_state)
-        
+
         # While we have remaining bits to spend lets send out scramblers randomly.
         while game_state.get_resource(BITS) >= game_state.type_cost(SCRAMBLER)[BITS] and len(deploy_locations) > 0:
             # Choose a random deploy location.
             deploy_index = random.randint(0, len(deploy_locations) - 1)
             deploy_location = deploy_locations[deploy_index]
-            
+
             game_state.attempt_spawn(SCRAMBLER, deploy_location)
             """
-            We don't have to remove the location since multiple information 
+            We don't have to remove the location since multiple information
             units can occupy the same space.
             """
 
@@ -272,7 +272,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     def least_damage_spawn_location(self, game_state, location_options):
         """
         This function will help us guess which location is the safest to spawn moving units from.
-        It gets the path the unit will take then checks locations on that path to 
+        It gets the path the unit will take then checks locations on that path to
         estimate the path's damage risk.
         """
         damages = []
@@ -284,7 +284,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 # Get number of enemy destructors that can attack the final location and multiply by destructor damage
                 damage += len(game_state.get_attackers(path_location, 0)) * gamelib.GameUnit(DESTRUCTOR, game_state.config).damage_i
             damages.append(damage)
-        
+
         # Now just return the location that takes the least damage
         return location_options[damages.index(min(damages))]
 
@@ -296,7 +296,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                     if unit.player_index == 1 and (unit_type is None or unit.unit_type == unit_type) and (valid_x is None or location[0] in valid_x) and (valid_y is None or location[1] in valid_y):
                         total_units += 1
         return total_units
-        
+
     def filter_blocked_locations(self, locations, game_state):
         filtered = []
         for location in locations:
@@ -316,7 +316,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def on_action_frame(self, turn_string):
         """
-        This is the action frame of the game. This function could be called 
+        This is the action frame of the game. This function could be called
         hundreds of times per turn and could slow the algo down so avoid putting slow code here.
         Processing the action frames is complicated so we only suggest it if you have time and experience.
         Full doc on format of a game frame at: https://docs.c1games.com/json-docs.html
@@ -328,7 +328,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         for breach in breaches:
             location = breach[0]
             unit_owner_self = True if breach[4] == 1 else False
-            # When parsing the frame data directly, 
+            # When parsing the frame data directly,
             # 1 is integer for yourself, 2 is opponent (StarterKit code uses 0, 1 as player_index instead)
             if not unit_owner_self:
                 gamelib.debug_write("Got scored on at: {}".format(location))
