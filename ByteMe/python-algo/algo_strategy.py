@@ -50,7 +50,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         ##      2 is destructor
         ##      3 is encryptor
         self.desired_map =  [[ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                [-1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2,-1],
+                [-1, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2,-1],
                 [-1,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,-1,-1],
                 [-1,-1,-1, 1, 1, 1, 1, 1, 1, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1,-1,-1,-1],
                 [-1,-1,-1,-1, 2, 2, 2, 2, 2, 0, 0, 3, 3, 3, 3, 3, 3, 0, 0, 2, 2, 2, 2, 2,-1,-1,-1,-1],
@@ -68,7 +68,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             # 69 is the highest possible priority (as it should be), only positive priorities should be considered
             # b_priority is build priorities
         self.b_priority_map=[[69,69,69,69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,69,69,69,69],
-                [-1,69,69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,69,69,-1],
+                [-1,69,69,69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,69,69,69,-1],
                 [-1,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0,65,65,60,60,65,65, 0, 0, 0, 0, 0, 0, 0, 0, 0,-1,-1],
                 [-1,-1,-1,65,65,65,65,45,45, 0, 0,69,35,60,35,35,69, 0, 0,50,50,60,60,60,60,-1,-1,-1],
                 [-1,-1,-1,-1,65,65,40,40,40, 0, 0,55,55,55,55,55,55, 0, 0,50,50,50,60,60,-1,-1,-1,-1],
@@ -160,22 +160,22 @@ class AlgoStrategy(gamelib.AlgoCore):
             spawn_location_options = locations
             #will check which of the preset spawn location options have the least enemy units in the path
             best_location = self.least_damage_spawn_location(game_state, spawn_location_options)
-            game_state.attempt_spawn(EMP, best_location, 2)
+            game_state.attempt_spawn(EMP, list(best_location), 2)
             #check the spawn points above and below the initial point. We will check above first and send as many pings as possible
             if best_location[0] > 14:
                 other_location = (best_location[0] + 1, best_location[1] + 1)
                 game_state.attempt_spawn(PING, other_location)
                 other1_location = (best_location[0] - 1, best_location[1] - 1)
-                game_state.attempt_spawn(PING, other1_location, game_state.number_affordable(game_state.PING))
+                game_state.attempt_spawn(PING, list(other1_location), game_state.number_affordable(PING))
             else:
                 other2_location = (best_location[0] + 1, best_location[1] - 1)
                 game_state.attempt_spawn(PING, other2_location)
                 other3_location = (best_location[0] - 1, best_location[1] + 1)
-                game_state.attempt_spawn(PING, other3_location, game_state.number_affordable(game_state.PING))
+                game_state.attempt_spawn(PING, list(other3_location), game_state.number_affordable(PING))
             #sends anything else incase all the above options fail
             newLocations = self.get_deploy_locations(game_state)
             newBestLocation = self.least_damage_spawn_location(game_state, newLocations)
-            game_state.attempt_spawn(PING, newBestLocation, 20)
+            game_state.attempt_spawn(PING, newBestLocation, game_state.number_affordable(PING))
         elif bits > 15:
             locations = self.findInMap(4)
             if locations == None:
@@ -183,18 +183,20 @@ class AlgoStrategy(gamelib.AlgoCore):
             spawn_location_options = locations
             #will check which of the preset spawn location options have the least enemy units in the path
             best_location = self.least_damage_spawn_location(game_state, spawn_location_options)
-            game_state.attempt_spawn(EMP, best_location, 2)
+            gamelib.debug_write("spawn EMP at")
+            gamelib.debug_write(str(best_location))
+            game_state.attempt_spawn(EMP, list(best_location), 2)
             #check the spawn points above and below the initial point. We will check above first and send as many pings as possible
             if best_location[0] > 14:
                 other_location = (best_location[0] + 1, best_location[1] + 1)
                 game_state.attempt_spawn(PING, other_location)
                 other1_location = (best_location[0] - 1, best_location[1] - 1)
-                game_state.attempt_spawn(PING, other1_location, game_state.number_affordable(game_state.PING))
+                game_state.attempt_spawn(PING, list(other1_location), game_state.number_affordable(PING))
             else:
                 other2_location = (best_location[0] + 1, best_location[1] - 1)
                 game_state.attempt_spawn(PING, other2_location)
                 other3_location = (best_location[0] - 1, best_location[1] + 1)
-                game_state.attempt_spawn(PING, other3_location, game_state.number_affordable(game_state.PING))
+                game_state.attempt_spawn(PING, list(other3_location), game_state.number_affordable(PING))
             #sends anything else in case all the above options fail
             newLocations = self.get_deploy_locations(game_state)
             newBestLocation = self.least_damage_spawn_location(game_state, newLocations)
