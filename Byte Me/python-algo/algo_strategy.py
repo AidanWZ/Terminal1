@@ -5,7 +5,6 @@ import warnings
 from sys import maxsize
 import json
 
-
 """
 Most of the algo code you write will be in this file unless you create new
 modules yourself. Start by modifying the 'on_turn' function.
@@ -44,9 +43,6 @@ class AlgoStrategy(gamelib.AlgoCore):
         # This is a good place to do initial setup
         self.scored_on_locations = []
 
-    
-        
-
     def on_turn(self, turn_state):
         """
         This function is called every turn with the game state wrapper as
@@ -59,19 +55,19 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
-        self.starter_strategy(game_state)
-
+        self.defense_strategy(game_state)
+        game_state = gamelib.GameState(self.config, turn_state)
+        self.offense_strategy(game_state)
         game_state.submit_turn()
-
 
     """
     NOTE: All the methods after this point are part of the sample starter-algo
     strategy and can safely be replaced for your custom algo.
     """
 
-    def starter_strategy(self, game_state):
+    def defense_strategy(self, game_state):
         """
-        For defense we will use a spread out layout and some Scramblers early on.
+        For defense we will use a staggered layout with filters and destructers.
         We will place destructors near locations the opponent managed to score on.
         For offense we will use long range EMPs if they place stationary units near the enemy's front.
         If there are no stationary units to attack in the front, we will send Pings to try and score quickly.
@@ -113,12 +109,16 @@ class AlgoStrategy(gamelib.AlgoCore):
         # More community tools available at: https://terminal.c1games.com/rules#Download
 
         # Place destructors that attack enemy units
-        destructor_locations = [[0, 13], [27, 13], [8, 11], [19, 11], [13, 11], [14, 11]]
+        destructor_locations = [[0, 13], [1, 13], [2, 13], [3, 13], 
+                                [24, 13], [25, 13], [26, 13], [27, 14]
+                                [8, 11], [9, 11], [10, 11]
+                                [17, 11], [18, 11], [19, 11]
+                                [13, 7], [14, 7], [15, 7]]
         # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
         game_state.attempt_spawn(DESTRUCTOR, destructor_locations)
         
         # Place filters in front of destructors to soak up damage for them
-        filter_locations = [[8, 12], [19, 12]]
+        filter_locations = [[0, 13], [19, 12]]
         game_state.attempt_spawn(FILTER, filter_locations)
         # upgrade filters so they soak more damage
         game_state.attempt_upgrade(filter_locations)
